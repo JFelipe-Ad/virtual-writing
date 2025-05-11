@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Librería Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+  <script defer>
+    let cart = [];
+
+    function addToCart(title, price) {
+      cart.push({ title, price });
+      updateCart();
+    }
+
+    function updateCart() {
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+      cartItems.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.title} - $${item.price}`;
+        cartItems.appendChild(li);
+        total += item.price;
+      });
+      cartTotal.textContent = `$${total.toFixed(2)}`;
+      renderPayPalButton(total);
+    }
+
+    function renderPayPalButton(total) {
+      const container = document.getElementById('paypal-button-container');
+      container.innerHTML = '';
+      if (cart.length === 0) return;
+
+      paypal.Buttons({
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: total.toFixed(2)
+              }
+            }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
+            alert('Gracias por tu compra, ' + details.payer.name.given_name + '!');
+            cart = [];
+            updateCart();
+          });
+        }
+      }).render('#paypal-button-container');
+    }
+  </script>
+</head>
+<body class="bg-white text-gray-800">
+  <header class="bg-yellow-400 p-6 shadow-md">
+    <h1 class="text-3xl font-bold text-center">📚 Librería Digital</h1>
+    <p class="text-center mt-2">Descubre y compra ebooks únicos y creativos</p>
+  </header>
+
+  <main class="max-w-5xl mx-auto py-8 px-4">
+    <section class="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div class="border rounded-xl shadow hover:shadow-lg transition p-4">
+        <h2 class="text-xl font-semibold mb-2">Ebook 1: Aprende a programar</h2>
+        <p class="text-gray-600 mb-2">Una guía completa para principiantes.</p>
+        <p class="text-blue-600 font-bold mb-4">$9.99</p>
+        <button onclick="addToCart('Ebook 1: Aprende a programar', 9.99)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Agregar al carrito</button>
+      </div>
+      <div class="border rounded-xl shadow hover:shadow-lg transition p-4">
+        <h2 class="text-xl font-semibold mb-2">Ebook 2: Productividad Personal</h2>
+        <p class="text-gray-600 mb-2">Mejora tu enfoque y tiempo.</p>
+        <p class="text-green-600 font-bold mb-4">$7.50</p>
+        <button onclick="addToCart('Ebook 2: Productividad Personal', 7.50)" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Agregar al carrito</button>
+      </div>
+      <div class="border rounded-xl shadow hover:shadow-lg transition p-4">
+        <h2 class="text-xl font-semibold mb-2">Ebook 3: Finanzas Personales</h2>
+        <p class="text-gray-600 mb-2">Organiza tu dinero como un experto.</p>
+        <p class="text-pink-600 font-bold mb-4">$11.25</p>
+        <button onclick="addToCart('Ebook 3: Finanzas Personales', 11.25)" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded">Agregar al carrito</button>
+      </div>
+    </section>
+
+    <section class="mt-12 bg-gray-100 p-6 rounded-xl">
+      <h3 class="text-2xl font-bold mb-4">🛒 Carrito de Compras</h3>
+      <ul id="cart-items" class="list-disc pl-5 text-lg mb-4"></ul>
+      <p class="font-bold mb-4">Total: <span id="cart-total">$0.00</span></p>
+      <div id="paypal-button-container" class="mt-4"></div>
+    </section>
+  </main>
+
+  <footer class="bg-yellow-300 text-center p-4 mt-12">
+    <p>&copy; 2025 Librería Digital. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>
